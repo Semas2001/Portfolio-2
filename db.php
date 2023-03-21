@@ -1,6 +1,6 @@
 <?php
     $host = 'localhost';
-    $dbname = 'shoppingList';
+    $dbname = 'shoppinglist';
     $itemsTable = 'items';
     $username = 'root';
     $password = '';
@@ -31,5 +31,7 @@
     } else {
         echo "Error while creating table: " . $mysqli->error;
     }
+
+    return $mysqli;
 
 ?>
