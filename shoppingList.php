@@ -1,52 +1,88 @@
-<?php
+<?php 
+include 'header.php';
 session_start();
 
 $mysqli = require __DIR__ . "/db.php";
 
-$sql="SELECT id, item, price FROM items";
-$result = $mysqli->query($sql);
-
-if ($result) {
-    if ($result->num_rows > 0) {
-        $row = $result->fetch_assoc();
-        $_SESSION["id"] = $row["id"];
-        $_SESSION["item"] = $row["item"];
-        $_SESSION["price"] = $row["price"];
+if (isset($_POST['add'])) {
+    if (isset($_SESSION["shoppingList"])) {
+        $array = array_column($_SESSION["shoppingList"], "id");
+        if (!in_array($_GET["id"], $array)) {
+            $count = count($_SESSION["shoppingList"]);
+            $item_array = array(
+                'id' => $_GET['id'],
+                'item' => $_POST['hidden_name'],
+                'price' => $_POST['hidden_price'],
+                'quantity' => $_POST['quantity']
+            );
+            $_SESSION['shoppingList'][$count] = $item_array;
+            echo '<script>window.location="shoppingList.php"</script>';
+        } else {
+            echo '<script>alert("Product is already in cart")</script>';
+            echo '<script>window.location="shoppingList.php"</script>';
+        }
     } else {
-        echo "No results found.";
+        $item_array = array(
+            'id' => $_GET['id'],
+            'item' => $_POST['hidden_name'],
+            'price' => $_POST['hidden_price'],
+            'quantity' => $_POST['quantity']
+        );
+        $_SESSION['shoppingList'][0] = $item_array;
     }
-} else {
-    echo "Error executing query: " . $mysqli->error;
+}
+
+if (isset($_GET['action'])) {
+    if ($_GET['action'] == 'delete') {
+        foreach ($_SESSION['shoppingList'] as $key => $value) {
+            if ($value['id'] == $_GET['id']) {
+                unset($_SESSION['shoppingList'][$key]);
+                echo '<script>window.location="shoppingList.php"</script>';
+            }
+        }
+    }
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Quiz Page</title>
-    <link rel="stylesheet" href="styles.css" />
-        <script
-			  src="https://code.jquery.com/jquery-3.6.3.js"
-			  integrity="sha256-nQLuAZGRRcILA+6dMBOvcRh5Pe310sBpanc6+QBmyVM="
-			  crossorigin="anonymous"></script>
-    
-    <script type = "text/javascript"></script>
-</head>
 <body>
-    <div class='container' >
+    <div class='container'>
         <div class='box'>
-            <?php include 'item_box.php'?>
-            <?php display_item()?>
-            <div class='button'><a href='cart.php'>View Cart</div></a>
-        </div> 
-
+            <?php include 'item_box.php'; ?>
+            <h3 class='title'>Shopping Cart</h3>
+            <div class='table-responsive'>
+                <table class='table table-bordered'>
+                    <tr>
+                        <th width='30%'>Item</th>
+                        <th width='10%'>Quantity</th>
+                        <th width='13%'>Price</th>
+                        <th width='10%'>Total</th>
+                        <th width='17%'>Remove Item</th>
+                    </tr>
+                    <?php
+                    if (!empty($_SESSION['shoppingList'])) {
+                        $total = 0;
+                        foreach ($_SESSION["shoppingList"] as $key => $value) {
+                            echo "<tr>";
+                            echo "<td>" . $value['item'] . "</td>";
+                            echo "<td>" . $value['quantity'] . "</td>";
+                            echo "<td>$" . $value['price'] . "</td>";
+                            echo "<td>$" . number_format($value['quantity'] * $value['price'], 2) . "</td>";
+                            echo "<td><a href='shoppingList.php?action=delete&id=" . $value['id'] . "'><span class='text-danger'>Remove</span></a></td>";
+                            echo "</tr>";
+                            $total = $total + ($value['quantity'] * $value['price']);
+                        }
+                        echo "<tr>";
+                        echo "<td colspan='3' align='right'>Total</td>";
+                        echo "<td align='right'>$" . number_format($total, 2) . "</td>";
+                        echo "</tr>";
+                    }
+                    ?>
+                </table>
+            </div>
+        </div>
     </div>
-
-
 </body>
+</html>
 
 
 
