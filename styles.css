@@ -73,7 +73,13 @@ a:link, a:visited, a:active{
     font-weight: 1000;
 }
 
-table, th, tr{
+table, th, tr, td{
     text-align: center;
+    border: 2px solid black;
 }
 
+.text-danger{
+    color: red;
+    font-size: medium;
+    font-weight: 500;
+}
